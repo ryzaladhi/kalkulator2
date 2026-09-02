@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator RPL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 420px;
+            width: 95%;
+        }
+
+        /* --- HEADER SECTION: Wrapper vertikal untuk logo + judul --- */
+        .header-section {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;   /* Susun secara vertikal */
+            align-items: center;      /* Tengah horizontal */
+            gap: 12px;                /* Jarak antara logo dan judul */
+        }
+
+        /* Barisan logo - lurus horizontal */
+        .logo-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;        /* Tetap dalam 1 baris lurus */
+        }
+
+        .logo-row img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+        }
+
+        .logo-row img:hover {
+            transform: scale(1.15);
+        }
+
+        /* Judul di bawah logo */
+        .header-section h1 {
+            color: #fff;
+            font-size: 22px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        /* ---------------------------------- */
+
+        .calculator {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .display {
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: right;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .previous-operand {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+            min-height: 24px;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .current-operand {
+            color: #fff;
+            font-size: 32px;
+            font-weight: bold;
+            min-height: 40px;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        button {
+            padding: 18px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .span-two {
+            grid-column: span 2;
+        }
+
+        .number {
+            background: #0f3460;
+            color: #fff;
+        }
+
+        .number:hover {
+            background: #1a4a7a;
+        }
+
+        .operator {
+            background: #e94560;
+            color: #fff;
+        }
+
+        .operator:hover {
+            background: #ff6b6b;
+        }
+
+        .function {
+            background: #533483;
+            color: #fff;
+        }
+
+        .function:hover {
+            background: #6b4c9a;
+        }
+
+        .equals {
+            background: #00d9ff;
+            color: #1a1a2e;
+            grid-column: span 2;
+        }
+
+        .equals:hover {
+            background: #00b8d4;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+        }
+
+        @media (max-width: 380px) {
+            .logo-row img {
+                width: 38px;
+                height: 38px;
+            }
+            .logo-row {
+                gap: 6px;
+            }
+            button {
+                padding: 15px;
+                font-size: 16px;
+            }
+            .header-section h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER: Logo di atas, judul di bawah -->
+        <div class="header-section">
+            <div class="logo-row">
+                <img src="logo rdn.png" alt="RDN" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNDUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI5IiBmaWxsPSIjZmZmZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+UkROPC90ZXh0Pjwvc3ZnPg=='">
+                <img src="logo sanden.jpg" alt="Sanden" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNDUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI5IiBmaWxsPSIjZmZmZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+U0FOREVOPC90ZXh0Pjwvc3ZnPg=='">
+                <img src="logo rpl.jpg" alt="RPL" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNDUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI5IiBmaWxsPSIjZmZmZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+UlBMPC90ZXh0Pjwvc3ZnPg=='">
+                <img src="logo pak moko.jpg" alt="Pak Moko" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNDUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI5IiBmaWxsPSIjZmZmZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TU9LTzwvdGV4dD48L3N2Zz4='">
+                <img src="logo 1.jpg" alt="Logo 1" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNDUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI5IiBmaWxsPSIjZmZmZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TE9HTzwvdGV4dD48L3N2Zz4='">
+            </div>
+            
+            <h1>KALKULATOR RPL</h1>
+        </div>
+        
+        <div class="calculator">
+            <div class="display">
+                <div class="previous-operand" id="previousOperand"></div>
+                <div class="current-operand" id="currentOperand">0</div>
+            </div>
+            <div class="buttons">
+                <button class="function span-two" onclick="calculator.clear()">AC</button>
+                <button class="function" onclick="calculator.delete()">DEL</button>
+                <button class="operator" onclick="calculator.chooseOperation('÷')">÷</button>
+                
+                <button class="number" onclick="calculator.appendNumber('7')">7</button>
+                <button class="number" onclick="calculator.appendNumber('8')">8</button>
+                <button class="number" onclick="calculator.appendNumber('9')">9</button>
+                <button class="operator" onclick="calculator.chooseOperation('×')">×</button>
+                
+                <button class="number" onclick="calculator.appendNumber('4')">4</button>
+                <button class="number" onclick="calculator.appendNumber('5')">5</button>
+                <button class="number" onclick="calculator.appendNumber('6')">6</button>
+                <button class="operator" onclick="calculator.chooseOperation('-')">-</button>
+                
+                <button class="number" onclick="calculator.appendNumber('1')">1</button>
+                <button class="number" onclick="calculator.appendNumber('2')">2</button>
+                <button class="number" onclick="calculator.appendNumber('3')">3</button>
+                <button class="operator" onclick="calculator.chooseOperation('+')">+</button>
+                
+                <button class="number" onclick="calculator.appendNumber('0')">0</button>
+                <button class="number" onclick="calculator.appendNumber('.')">.</button>
+                <button class="equals span-two" onclick="calculator.compute()">=</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>by RDN PRO | SMKN 1 Sanden</p>
+        </div>
+    </div>
+
+    <script>
+        class Calculator {
+            constructor(previousOperandTextElement, currentOperandTextElement) {
+                this.previousOperandTextElement = previousOperandTextElement;
+                this.currentOperandTextElement = currentOperandTextElement;
+                this.clear();
+            }
+
+            clear() {
+                this.currentOperand = '0';
+                this.previousOperand = '';
+                this.operation = undefined;
+                this.updateDisplay();
+            }
+
+            delete() {
+                if (this.currentOperand === '0') return;
+                if (this.currentOperand.length === 1) {
+                    this.currentOperand = '0';
+                } else {
+                    this.currentOperand = this.currentOperand.toString().slice(0, -1);
+                }
+                this.updateDisplay();
+            }
+
+            appendNumber(number) {
+                if (number === '.' && this.currentOperand.includes('.')) return;
+                if (this.currentOperand === '0' && number !== '.') {
+                    this.currentOperand = number.toString();
+                } else {
+                    this.currentOperand = this.currentOperand.toString() + number.toString();
+                }
+                this.updateDisplay();
+            }
+
+            chooseOperation(operation) {
+                if (this.currentOperand === '') return;
+                if (this.previousOperand !== '') {
+                    this.compute();
+                }
+                this.operation = operation;
+                this.previousOperand = this.currentOperand;
+                this.currentOperand = '0';
+                this.updateDisplay();
+            }
+
+            compute() {
+                let computation;
+                const prev = parseFloat(this.previousOperand);
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(prev) || isNaN(current)) return;
+                
+                switch (this.operation) {
+                    case '+':
+                        computation = prev + current;
+                        break;
+                    case '-':
+                        computation = prev - current;
+                        break;
+                    case '×':
+                        computation = prev * current;
+                        break;
+                    case '÷':
+                        if (current === 0) {
+                            alert('Tidak bisa membagi dengan nol!');
+                            return;
+                        }
+                        computation = prev / current;
+                        break;
+                    default:
+                        return;
+                }
+                
+                this.currentOperand = computation.toString();
+                this.operation = undefined;
+                this.previousOperand = '';
+                this.updateDisplay();
+            }
+
+            getDisplayNumber(number) {
+                const stringNumber = number.toString();
+                const integerDigits = parseFloat(stringNumber.split('.')[0]);
+                const decimalDigits = stringNumber.split('.')[1];
+                let integerDisplay;
+                if (isNaN(integerDigits)) {
+                    integerDisplay = '';
+                } else {
+                    integerDisplay = integerDigits.toLocaleString('id-ID', {
+                        maximumFractionDigits: 0
+                    });
+                }
+                if (decimalDigits != null) {
+                    return `${integerDisplay},${decimalDigits}`;
+                } else {
+                    return integerDisplay;
+                }
+            }
+
+            updateDisplay() {
+                this.currentOperandTextElement.innerText = this.getDisplayNumber(this.currentOperand);
+                if (this.operation != null) {
+                    this.previousOperandTextElement.innerText = 
+                        `${this.getDisplayNumber(this.previousOperand)} ${this.operation}`;
+                } else {
+                    this.previousOperandTextElement.innerText = '';
+                }
+            }
+        }
+
+        const previousOperandTextElement = document.getElementById('previousOperand');
+        const currentOperandTextElement = document.getElementById('currentOperand');
+        const calculator = new Calculator(previousOperandTextElement, currentOperandTextElement);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') calculator.appendNumber(e.key);
+            if (e.key === '.') calculator.appendNumber('.');
+            if (e.key === '+') calculator.chooseOperation('+');
+            if (e.key === '-') calculator.chooseOperation('-');
+            if (e.key === '*') calculator.chooseOperation('×');
+            if (e.key === '/') {
+                e.preventDefault();
+                calculator.chooseOperation('÷');
+            }
+            if (e.key === 'Enter' || e.key === '=') calculator.compute();
+            if (e.key === 'Backspace') calculator.delete();
+            if (e.key === 'Escape') calculator.clear();
+        });
+    </script>
+</body>
+</html>
